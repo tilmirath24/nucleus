@@ -9,8 +9,23 @@
   <link rel="stylesheet" href="styles.css">
   <link rel=”stylesheet” href=”https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css”rel=”nofollow” integrity=”sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm” crossorigin=”anonymous”>
  
-	
+   <img src="images/nucleus.png" class="center" width="80%">
 	<hr>
+  <script 
+  src="http://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.min.js">
+    </script>
+    <style>
+        #canvas_container {
+            width: 1400px;
+            height: 450px;
+            overflow: auto;
+        }
+        #canvas_container {
+          background: #333;
+          text-align: center;
+          border: solid 3px;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,7 +60,7 @@
    
 
   </div>
-  <img src="nucleus.png" class="center" width="600px" height="200px">
+
  
       <div class="card">
         <h2>Self-Development</h2>
@@ -53,18 +68,103 @@
         <h3><a href="https://www.youtube.com/watch?v=HsodP-3C-Ew&list=PL_Z_GZa9ZDkc43Z0hUniTSgYcFvr6sCNJ&index=2">ACRONYMS</a></h3>
         <h3><a href="https://www.youtube.com/watch?v=_NifCogTv0E&list=PL_Z_GZa9ZDkc43Z0hUniTSgYcFvr6sCNJ&index=3">كيف أبدأ الإشتغال</a></h3>
       </div>
-    <img src="شكرا.gif" class="center" width="80%">
+      <img src="images/شكرا.gif" class="center" width="80%">
       <hr
 
   <div class="footer">
     <h2>Powered by<br> <strong> Mohamed Ouhassi</strong>
       <br>
-      <p><a href="https://en.wikipedia.org/wiki/Sefrou" </a>
+      <p><a href="https://en.wikipedia.org/wiki/Sefrou"></a> 
           <h2>Sefrou </h2>
-      </p>
+        </p>
       <h2>2023</h2>
   </div>
-
+   
+  <div id="my_pdf_viewer">
+    <div id="canvas_container">
+        <canvas id="pdf_renderer"></canvas>
+    </div>
+    <div id="navigation_controls">
+        <button id="go_previous">Previous</button>
+        <input id="current_page" value="1" type="number"/>
+        <button id="go_next">Next</button>
+    </div>
+    <div id="zoom_controls">  
+        <button id="zoom_in">+</button>
+        <button id="zoom_out">-</button>
+    </div>
+</div>
+<script>
+    var myState = {
+        pdf: null,
+        currentPage: 1,
+        zoom: 1
+    }
+ 
+    pdfjsLib.getDocument('./my_document.pdf').then((pdf) => {
+ 
+        myState.pdf = pdf;
+        render();
+    });
+    function render() {
+        myState.pdf.getPage(myState.currentPage).then((page) => {
+     
+            var canvas = document.getElementById("pdf_renderer");
+            var ctx = canvas.getContext('2d');
+ 
+            var viewport = page.getViewport(myState.zoom);
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+     
+            page.render({
+                canvasContext: ctx,
+                viewport: viewport
+            });
+        });
+    }
+    document.getElementById('go_previous').addEventListener('click', (e) => {
+        if(myState.pdf == null || myState.currentPage == 1) 
+          return;
+        myState.currentPage -= 1;
+        document.getElementById("current_page").value = myState.currentPage;
+        render();
+    });
+    document.getElementById('go_next').addEventListener('click', (e) => {
+        if(myState.pdf == null || myState.currentPage > myState.pdf._pdfInfo.numPages) 
+           return;
+        myState.currentPage += 1;
+        document.getElementById("current_page").value = myState.currentPage;
+        render();
+    });
+    document.getElementById('current_page').addEventListener('keypress', (e) => {
+        if(myState.pdf == null) return;
+     
+        // Get key code 
+        var code = (e.keyCode ? e.keyCode : e.which);
+     
+        // If key code matches that of the Enter key 
+        if(code == 13) {
+            var desiredPage = 
+            document.getElementById('current_page').valueAsNumber;
+                             
+            if(desiredPage >= 1 && desiredPage <= myState.pdf._pdfInfo.numPages) {
+                myState.currentPage = desiredPage;
+                document.getElementById("current_page").value = desiredPage;
+                render();
+            }
+        }
+    });
+    document.getElementById('zoom_in').addEventListener('click', (e) => {
+        if(myState.pdf == null) return;
+        myState.zoom += 0.5;
+        render();
+    });
+    document.getElementById('zoom_out').addEventListener('click', (e) => {
+        if(myState.pdf == null) return;
+        myState.zoom -= 0.5;
+        render();
+    });
+</script>
 </body>
 
 </html>
